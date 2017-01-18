@@ -19,6 +19,6 @@ def read():
 if __name__ == "__main__":
 	try:
 		led.setup(R, G, B)
-    		print(led.read())
+    		print(read())
 	except KeyboardInterrupt:
 		destroy()
