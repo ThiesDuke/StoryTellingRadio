@@ -6,7 +6,7 @@ def setup(Rpin, Gpin, Bpin):
 	global pins
 	global p_R, p_G, p_B
 	pins = {'pin_R': Rpin, 'pin_G': Gpin, 'pin_B': Bpin}
-	GPIO.setmode(GPIO.BOARD)       # Numbers GPIOs by physical location
+	GPIO.setmode(GPIO.BCM)       # Numbers GPIOs by physical location
 	for i in pins:
 		GPIO.setup(pins[i], GPIO.OUT)   # Set pins' mode is output
 		GPIO.output(pins[i], GPIO.HIGH) # Set pins to high(+3.3V) to off led
