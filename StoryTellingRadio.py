@@ -12,6 +12,7 @@ R = 17
 G = 18
 B = 27
 global cardId
+global BackGroundMusicArray
 
 def read():
     led.setColor(colors[0])
@@ -19,20 +20,20 @@ def read():
     led.setColor(colors[1])
     return cardId
 
+def setup():
+	pygame.mixer.pre_init(44100, -16, 2, 512)
+    	pygame.mixer.init()
+    	pygame.mixer.music.set_volume(0.5)
+    	filepath_music = "/home/pi/share/StoryTellingRadio/content/"
+	BackGroundMusicArray=[]
+    	BackGroundMusicArrayCount=0
+    	for filename in sorted(os.listdir(filepath_music)):
+        	BackGroundMusicArray.append(filepath_music + filename)
+	print("Setup done")
+
 def run():
-    pygame.mixer.pre_init(44100, -16, 2, 512)
-    pygame.mixer.init()
-    pygame.mixer.music.set_volume(0.5)
-    filepath_music = "/home/pi/share/StoryTellingRadio/content/"
-    BackGroundMusicArray=[]
-    BackGroundMusicArrayCount=0
-    for filename in sorted(os.listdir(filepath_music)):
-        BackGroundMusicArray.append(filepath_music + filename)
-	pygame.mixer.music.load(BackGroundMusicArray[BackGroundMusicArrayCount])
-	pygame.mixer.music.set_volume(0.7)
-	time.sleep(3)
 	while True:
-		CardIdentification= str(read())
+	CardIdentification= str(read())
         #if (cardId == "616630126192"):
          #   pygame.mixer.music.load(BackGroundMusicArray[0])
          #   print("CardOne")
@@ -44,9 +45,11 @@ def run():
         time.sleep(3)
         led.setColor(colors[0])
 
+
 if __name__ == "__main__":
     try:
         led.setup(R, G, B)
-        run()
+        setup()
+	run()
     except KeyboardInterrupt:
         destroy()
