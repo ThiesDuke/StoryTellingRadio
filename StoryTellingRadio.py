@@ -24,7 +24,7 @@ def setup():
 	pygame.mixer.pre_init(44100, -16, 2, 512)
     	pygame.mixer.init()
     	pygame.mixer.music.set_volume(0.5)
-    	filepath_music = "/home/pi/share/StoryTellingRadio/content/"
+    	filepath_music = "/home/pi/share/StoryTellingRadio2/content/"
 	BackGroundMusicArray=[]
     	BackGroundMusicArrayCount=0
     	for filename in sorted(os.listdir(filepath_music)):
@@ -33,13 +33,13 @@ def setup():
 
 def run():
 	while True:
-	CardIdentification= str(read())
-        #if (cardId == "616630126192"):
-         #   pygame.mixer.music.load(BackGroundMusicArray[0])
-         #   print("CardOne")
-        #if (cardId != "616630126192"):
-        #    pygame.mixer.music.load(BackGroundMusicArray[1])
-        #    print("CardTwo")
+	       CardIdentification= str(read())
+            #if (cardId == "616630126192"):
+            #   pygame.mixer.music.load(BackGroundMusicArray[0])
+            #   print("CardOne")
+            #if (cardId != "616630126192"):
+            #    pygame.mixer.music.load(BackGroundMusicArray[1])
+            #    print("CardTwo")
         print("something")
         pygame.mixer.music.play()
         time.sleep(3)
