@@ -7,6 +7,8 @@ import time
 import led
 import pygame
 import os
+import signal
+
 colors = [0x4CE187, 0xF52832]
 R = 17
 G = 18
@@ -33,14 +35,14 @@ def setup():
 
 def run():
 	while True:
-	       CardIdentification= str(read())
+	       CardIdentification= read()
             #if (cardId == "616630126192"):
             #   pygame.mixer.music.load(BackGroundMusicArray[0])
             #   print("CardOne")
             #if (cardId != "616630126192"):
             #    pygame.mixer.music.load(BackGroundMusicArray[1])
             #    print("CardTwo")
-        print("something")
+        print(CardIdentification)
         pygame.mixer.music.play()
         time.sleep(3)
         led.setColor(colors[0])
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     try:
         led.setup(R, G, B)
         setup()
-	run()
+        run()
     except KeyboardInterrupt:
         destroy()
+        GPIO.cleanup()
