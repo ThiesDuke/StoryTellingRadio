@@ -2,57 +2,63 @@
 # -*- coding: utf8 -*-
 
 import RPi.GPIO as GPIO
-import nfc
 import time
 import led
 import pygame
 import os
 import signal
+import MFRC522
 
-colors = [0x4CE187, 0xF52832]
+colors = [0x0000FF, 0xFF0000]
 R = 17
 G = 18
 B = 27
 global cardId
 global BackGroundMusicArray
+global reading
 
 def read():
+    global reading
     led.setColor(colors[0])
-    cardId=nfc.readNfc()
-    led.setColor(colors[1])
-    return cardId
+    MIFAREReader = MFRC522.MFRC522()
+    (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+    (status,backData) = MIFAREReader.MFRC522_Anticoll()
+    if status == MIFAREReader.MI_OK:
+        MIFAREReader.AntennaOff()
+        led.setColor(colors[1])
+        reading = False
+        return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
 def setup():
-	pygame.mixer.pre_init(44100, -16, 2, 512)
-    	pygame.mixer.init()
-    	pygame.mixer.music.set_volume(0.5)
-    	filepath_music = "/home/pi/share/StoryTellingRadio2/content/"
-	BackGroundMusicArray=[]
-    	BackGroundMusicArrayCount=0
-    	for filename in sorted(os.listdir(filepath_music)):
-        	BackGroundMusicArray.append(filepath_music + filename)
-	print("Setup done")
+    global BackGroundMusicArray
+    pygame.mixer.pre_init(44100, -16, 2, 512)
+    pygame.mixer.init()
+    pygame.mixer.music.set_volume(0.5)
+    filepath_music = "/home/pi/share/StoryTellingRadio2/content/"
+    BackGroundMusicArray=[]
+    BackGroundMusicArrayCount=0
+    for filename in sorted(os.listdir(filepath_music)):
+        BackGroundMusicArray.append(filepath_music + filename)
+    print("Setup done")
 
 def run():
-	while True:
-	       CardIdentification= read()
-            #if (cardId == "616630126192"):
-            #   pygame.mixer.music.load(BackGroundMusicArray[0])
-            #   print("CardOne")
-            #if (cardId != "616630126192"):
-            #    pygame.mixer.music.load(BackGroundMusicArray[1])
-            #    print("CardTwo")
-        print(CardIdentification)
-        pygame.mixer.music.play()
+    global BackGroundMusicArray
+    global reading
+    reading = True
+    while reading==True:
+        cardId= read()
+        if (cardId == "136419912051"):
+            pygame.mixer.music.load(BackGroundMusicArray[0])
+        print("card id is:")
+        print(cardId)
         time.sleep(3)
         led.setColor(colors[0])
-
-
+        
 if __name__ == "__main__":
     try:
         led.setup(R, G, B)
         setup()
         run()
     except KeyboardInterrupt:
-        destroy()
+        #destroy()
         GPIO.cleanup()

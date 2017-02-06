@@ -43,14 +43,14 @@ while continue_reading:
         MIFAREReader.MFRC522_SelectTag(uid)
 
         # Authenticate
-        status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, uid)
+        #status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, uid)
 
         # Check if authenticated
-        if status == MIFAREReader.MI_OK:
-            MIFAREReader.MFRC522_Read(8)
-            MIFAREReader.MFRC522_StopCrypto1()
-        else:
-            print "Authentication error"
+        #if status == MIFAREReader.MI_OK:
+        #    MIFAREReader.MFRC522_Read(8)
+        #    MIFAREReader.MFRC522_StopCrypto1()
+        #else:
+        #    print "Authentication error"
 
         # Make sure to stop scanning for cards
-        continue_reading = False
+        #continue_reading = False
