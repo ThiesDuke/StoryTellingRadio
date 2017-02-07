@@ -44,21 +44,30 @@ def setup():
 def run():
     global BackGroundMusicArray
     global reading
+    music_list = {
+        "136419912051": BackGroundMusicArray[0],
+        "136416012084": BackGroundMusicArray[1],        
+        "1364152120108": BackGroundMusicArray[0],
+        "136419812050": BackGroundMusicArray[1],
+        "1364159120107": BackGroundMusicArray[0],
+        }
     reading = True
     while reading==True:
         cardId= read()
-        if (cardId == "136419912051"):
-            pygame.mixer.music.load(BackGroundMusicArray[0])
-        print("card id is:")
-        print(cardId)
-        time.sleep(3)
-        led.setColor(colors[0])
-        
+        if cardId != None:
+            pygame.mixer.music.load(music_list[cardId])
+            pygame.mixer.music.play()
+            time.sleep(5)
+            led.setColor(colors[0])
+            reading = True
+
+def destroy():
+    GPIO.cleanup()                     # Release resource
+
 if __name__ == "__main__":
     try:
         led.setup(R, G, B)
         setup()
         run()
     except KeyboardInterrupt:
-        #destroy()
-        GPIO.cleanup()
+        destroy()
