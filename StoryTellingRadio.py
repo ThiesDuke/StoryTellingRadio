@@ -38,8 +38,7 @@ def setup():
     BackGroundMusicArray=[]
     BackGroundMusicArrayCount=0
     for filename in sorted(os.listdir(filepath_music)):
-        BackGroundMusicArray.append(filepath_music + filename)
-    print("Setup done")
+        BackGroundMusicArray.append(filepath_music + filename)    
 
 def run():
     global BackGroundMusicArray
@@ -50,18 +49,31 @@ def run():
         "1364152120108": BackGroundMusicArray[0],
         "136419812050": BackGroundMusicArray[1],
         "1364159120107": BackGroundMusicArray[0],
+        "616630126192": BackGroundMusicArray[1]
         }
     reading = True
+    lastcardId = "initialized"
     while reading==True:
         cardId= read()
-        if cardId != None:
+        if cardId != None and cardId != lastcardId:
             pygame.mixer.music.load(music_list[cardId])
             pygame.mixer.music.play()
-            time.sleep(5)
+            #print("music plays")
+            time.sleep(10)
+            led.setColor(colors[0])
+            reading = True
+            lastcardId = cardId
+        elif cardId == lastcardId:
+            pygame.mixer.music.stop()
+            #print("music stopped")
+            led.setColor(colors[1])
+            time.sleep(1)
             led.setColor(colors[0])
             reading = True
 
 def destroy():
+    global BackGroundMusicArray
+    BackGroundMusicArray = []
     GPIO.cleanup()                     # Release resource
 
 if __name__ == "__main__":
