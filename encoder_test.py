@@ -10,7 +10,7 @@ from rotary_encoder import RotaryEncoder
 # physical pin numbers
 pin_a = 22
 pin_b = 23
-
+#test
 # delay in seconds before stopping playback
 crank_delay = 3
 
