@@ -43,9 +43,21 @@ def main(encoder):
                 ts = time.time()
                 #i += 1
                 print 'speed:', speed, i
+                #strHex = "%X" % 255
+                #print(strHex)
 
                 # check rotation direction
-                bluePart = int(i)*10
+                redPart = 18
+                greenPart = 18
+                bluePart = 255
+                if redPart <1:
+                    redPart = 1
+                elif redPart >255:
+                    redPart = 254
+                if greenPart <1:
+                    greenPart = 1
+                elif greenPart >255:
+                    greenPart = 254
                 if bluePart <1:
                     bluePart = 1
                 elif bluePart >255:
@@ -53,15 +65,20 @@ def main(encoder):
                 if encoder.current_rotation > last_position:
                     i += 1
                     direction = 1
-                    Multicolor = int(str(bluePart),16)
+                    redPart -= i
+                    greenPart -= i
+                    bluePart += i
                 elif encoder.current_rotation < last_position:
                     i -= 1
                     direction = 0
-                    bluePart = i*16
-                    Multicolor = int(str(bluePart),16)
-                print(bluePart)
-                print(Multicolor)
-                led.setColor(Multicolor)
+                    direction = 1
+                    redPart -= i
+                    greenPart -= i
+                    bluePart += i
+                #Multicolor = ("%X" % redPart) + ("%X" % greenPart) + ("%X" % bluePart)
+                #print(bluePart)
+                #print(Multicolor)
+                led.setColor(str("0x"+ str(("%X" % redPart) + ("%X" % greenPart) + ("%X" % bluePart))))  
 
 
                 last_position = encoder.current_rotation
