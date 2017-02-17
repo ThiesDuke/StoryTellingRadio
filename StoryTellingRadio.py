@@ -8,7 +8,12 @@ import pygame
 import os
 import signal
 import MFRC522
+from rotary_encoder import RotaryEncoder
+import multiprocessing
+from threading import Thread
 
+pin_a = 22
+pin_b = 23
 colors = [0x0000FF, 0xFF0000]
 R = 17
 G = 18
@@ -61,7 +66,6 @@ def run():
             #print("music plays")
             time.sleep(10)
             led.setColor(colors[0])
-            reading = True
             lastcardId = cardId
         elif cardId == lastcardId:
             pygame.mixer.music.stop()
@@ -69,7 +73,48 @@ def run():
             led.setColor(colors[1])
             time.sleep(1)
             led.setColor(colors[0])
-            reading = True
+
+def main():
+    encoder = RotaryEncoder(pin_a, pin_b)
+    ts = time.time()
+    i = 0
+    last_position = 1
+    led.setup(R, G, B)
+    led.setColor(colors[0])
+    redPart = 1
+    greenPart = 1
+    bluePart = 255
+
+    while True:
+        encoder.update()
+        if encoder.check_state_change():
+            if encoder.at_rest:
+                speed = time.time() - ts
+                ts = time.time()
+                print 'speed:', speed, i
+                direction = 10
+                if encoder.current_rotation > last_position:
+                    i += 1
+                    colorchanger = i*-1
+                    direction = 1
+                    redPart = redPart+20
+                    greenPart = greenPart+20
+                elif encoder.current_rotation < last_position:
+                    colorchanger = i*-1
+                    i -= 1
+                    direction = 0
+                    redPart = redPart-20
+                    greenPart = greenPart-20
+                redPart = clamp(redPart)
+                greenPart = clamp(greenPart)
+                bluePart= clamp(bluePart)
+                Multicolor1 = int('%02x%02x%02x' % (redPart,greenPart,bluePart),16)
+                led.setColor(Multicolor1)  
+                last_position = encoder.current_rotation
+
+def clamp(x):
+    return max(0, min(x, 255))
+
 
 def destroy():
     global BackGroundMusicArray
@@ -80,6 +125,17 @@ if __name__ == "__main__":
     try:
         led.setup(R, G, B)
         setup()
-        run()
+        #run()
+        ThreadA = Thread(target= run)
+        ThreadB = Thread(target= main)
+        ThreadA.run()
+        ThreadB.run()
+        #ThreadA.join()
+        #ThreadB.join()
+        #multiprocessing.set_start_method('fork')
+        #p = multiprocessing.Process(target=run)
+        #p.start()
+        #p.join()
+        #Process(target=main).start()
     except KeyboardInterrupt:
         destroy()

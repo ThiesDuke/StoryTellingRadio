@@ -15,97 +15,47 @@ colors = [0x0000FF, 0xFF0000]
 R = 17
 G = 18
 B = 27
-Multicolor = None
-
-#test
-# delay in seconds before stopping playback
-crank_delay = 3
-
 
 def main(encoder):
-    global Multicolor
     ts = time.time()
     i = 0
     last_position = 1
     led.setup(R, G, B)
     led.setColor(colors[0])
+    redPart = 1
+    greenPart = 1
+    bluePart = 255
 
     while True:
         encoder.update()
         if encoder.check_state_change():
-            # encoder state changed
-
-            # only take action once per full click advance
             if encoder.at_rest:
-                # update timestamp, continue playback
-                # speed is seconds since last click
                 speed = time.time() - ts
                 ts = time.time()
-                #i += 1
                 print 'speed:', speed, i
-                #strHex = "%X" % 255
-                #print(strHex)
-
-                # check rotation direction
-                redPart = 18
-                greenPart = 18
-                bluePart = 255
-                if redPart <1:
-                    redPart = 1
-                elif redPart >255:
-                    redPart = 254
-                if greenPart <1:
-                    greenPart = 1
-                elif greenPart >255:
-                    greenPart = 254
-                if bluePart <1:
-                    bluePart = 1
-                elif bluePart >255:
-                    bluePart = 254
+                direction = 10
                 if encoder.current_rotation > last_position:
                     i += 1
+                    colorchanger = i*-1
                     direction = 1
-                    redPart -= i
-                    greenPart -= i
-                    bluePart += i
+                    redPart = redPart+20
+                    greenPart = greenPart+20
                 elif encoder.current_rotation < last_position:
+                    colorchanger = i*-1
                     i -= 1
                     direction = 0
-                    direction = 1
-                    redPart -= i
-                    greenPart -= i
-                    bluePart += i
-                #Multicolor = ("%X" % redPart) + ("%X" % greenPart) + ("%X" % bluePart)
-                #print(bluePart)
-                #print(Multicolor)
-                led.setColor(str("0x"+ str(("%X" % redPart) + ("%X" % greenPart) + ("%X" % bluePart))))  
-
-
+                    redPart = redPart-20
+                    greenPart = greenPart-20
+                redPart = clamp(redPart)
+                greenPart = clamp(greenPart)
+                bluePart= clamp(bluePart)
+                Multicolor1 = int('%02x%02x%02x' % (redPart,greenPart,bluePart),16)
+                led.setColor(Multicolor1)  
                 last_position = encoder.current_rotation
-                Multicolor = int("FFFFFF",16)
-
-                # put playback code here
-                if i % 3 == 0 and direction == 1:
-                    # one frame every 3 clicks
-                    print 'play next frame'
-                elif i % 3 == 0 and direction == 0:
-                    # one frame backward
-                    print 'play previous frame'
-
-        else:
-            # encoder state not changed, check timeout value
-            if time.time() - ts >= crank_delay:
-                # timeout value reached, stop playback
-                break
-
-    print '3 sec pause detected'
-
-    # put playback stop code here
-    print 'playback stopped'
-
-    # this will start the loop over
     main(encoder)
 
+def clamp(x):
+    return max(0, min(x, 255))
 
 if __name__ == '__main__':
     encoder = RotaryEncoder(pin_a, pin_b)
