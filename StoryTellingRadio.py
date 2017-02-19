@@ -4,12 +4,14 @@
 import RPi.GPIO as GPIO
 import time
 import led
+#import led as led2
 import pygame
 import os
 import signal
 import MFRC522
 from rotary_encoder import RotaryEncoder
-import multiprocessing
+import multiprocessing as mp
+from multiprocessing import Process
 from threading import Thread
 
 pin_a = 22
@@ -18,6 +20,7 @@ colors = [0x0000FF, 0xFF0000]
 R = 17
 G = 18
 B = 27
+GPIO_Button = 12
 global cardId
 global BackGroundMusicArray
 global reading
@@ -45,7 +48,7 @@ def setup():
     for filename in sorted(os.listdir(filepath_music)):
         BackGroundMusicArray.append(filepath_music + filename)    
 
-def run():
+def rfid_chip():
     global BackGroundMusicArray
     global reading
     music_list = {
@@ -74,7 +77,7 @@ def run():
             time.sleep(1)
             led.setColor(colors[0])
 
-def main():
+def encoder():
     encoder = RotaryEncoder(pin_a, pin_b)
     ts = time.time()
     i = 0
@@ -115,7 +118,6 @@ def main():
 def clamp(x):
     return max(0, min(x, 255))
 
-
 def destroy():
     global BackGroundMusicArray
     BackGroundMusicArray = []
@@ -126,15 +128,18 @@ if __name__ == "__main__":
         led.setup(R, G, B)
         setup()
         #run()
-        ThreadA = Thread(target= run)
-        ThreadB = Thread(target= main)
-        ThreadA.run()
-        ThreadB.run()
+        #ThreadA = Thread(target= encoder)
+        #ThreadB = Thread(target= rfid_chip)
+        #ThreadB.run()
+        #time.sleep(5)
+        #ThreadA.run()
         #ThreadA.join()
         #ThreadB.join()
-        #multiprocessing.set_start_method('fork')
-        #p = multiprocessing.Process(target=run)
-        #p.start()
+        mp.set_start_method('fork')
+        p = mp.Process(target=encoder)
+        p2= mp.Process(target=rfid_chip)
+        p.start()
+        p2.start()
         #p.join()
         #Process(target=main).start()
     except KeyboardInterrupt:
