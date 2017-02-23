@@ -20,7 +20,7 @@ class RotaryEncoder(object):
         self.current_rotation = 0
         self._setup()
         self.get_current_state()
-        print 'Rotary Encoder loaded'
+        #print 'Rotary Encoder loaded'
 
     def update(self):
         # helper function for updating state
@@ -59,18 +59,18 @@ class RotaryEncoder(object):
 
     def _handle_rotation_init(self):
         if self.current_state == (1, 0):
-            print 'anti-clockwise rotation started'
+            print ''
 
         elif self.current_state == (0, 1):
-            print 'clockwise rotation started'
+            print ''
 
     def _handle_rotation_end(self):
         if self.last_state == (0, 1):
-            print 'anti-clockwise rotation ended'
+            #print 'anti-clockwise rotation ended'
             self.current_rotation -= 1
 
         elif self.last_state == (1, 0):
-            print 'clockwise rotation ended'
+            #print 'clockwise rotation ended'
             self.current_rotation += 1
 
 
