@@ -9,9 +9,6 @@ import os
 import signal
 import MFRC522
 from rotary_encoder import RotaryEncoder
-import multiprocessing as mp
-from multiprocessing import Process
-from threading import Thread
 
 pin_a = 22
 pin_b = 23
@@ -21,24 +18,24 @@ B = 27
 GPIO_Button = 12
 global reading
 global lockstate
-lockstate = False
+global last_position
+last_position = 1
 
 def read():
     global reading
     global lockstate
+    #print("called read")
     MIFAREReader = MFRC522.MFRC522()
-    if lockstate == False:
-        lockstate = True
-        led_control("rfid_ready")
-        print(lockstate)
     (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
     (status,backData) = MIFAREReader.MFRC522_Anticoll()
     if status == MIFAREReader.MI_OK:
         MIFAREReader.AntennaOff()
-        return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4]) 
+        return str(backData[0])+str(backData[1])+str(backData[2])+str(backData[3])+str(backData[4])
 
 def led_control(playerstate):
     global lockstate
+    lockstate = True
+    print("called led_control")
     led_colors = [0x00FF00, 0xFF0000]
     led.setup(R, G, B)
     redPart = 1
@@ -64,14 +61,14 @@ def led_control(playerstate):
         bluePart= clamp(bluePart)
         Multicolor1 = int('%02x%02x%02x' % (redPart,greenPart,bluePart),16)
         show_led = Multicolor1
-    LED_Lock.acquire()
     led.setColor(show_led)
-    LED_Lock.release()
     lockstate = False
 
 def rfid_chip():
     global reading
     global lockstate
+    print("called rfid_chip")
+    led_control("rfid_ready")
     #pygame.mixer.pre_init(44100, -16, 2, 512)
     #pygame.mixer.init()
     #pygame.mixer.music.set_volume(0.5)
@@ -94,54 +91,50 @@ def rfid_chip():
         cardId= read()
         if cardId != None and cardId != lastcardId:
             print("reading successful")
+            #pygame.mixer.music.stop()
             #pygame.mixer.music.load(music_list[cardId])
             #pygame.mixer.music.play()
-            #print("music plays")
+            print("music plays")
             if lockstate == False:
-                lockstate = True
                 led_control("rfid_busy")
-                print(lockstate)
             time.sleep(10)
             lastcardId = cardId
-        elif cardId == lastcardId:
-            print("reading successful")
-            #pygame.mixer.music.stop()
-            #print("music stopped")
             if lockstate == False:
-                lockstate = True
-                led_control("rfid_busy")
-                print(lockstate)
-            time.sleep(1)
-            print("reading successful")
+                led_control("rfid_ready")
 
-def encoder():
-    global lockstate
+def setup_rotary_encoder():
+    global encoder
     encoder = RotaryEncoder(pin_a, pin_b)
+    
+
+def detect(chn):
+    global lockstate
+    global last_position
+    global encoder
+    print("called detect")
     ts = time.time()
     i = 0
-    last_position = 1
-    while True:
-        encoder.update()
-        if encoder.check_state_change():
-            if encoder.at_rest:
-                speed = time.time() - ts
-                ts = time.time()
-                direction = 10
-                if encoder.current_rotation > last_position:
-                    i += 1
-                    direction = 1
-                    if lockstate == False:
-                        lockstate = True
-                        led_control("encoder_up")
-                        print(lockstate)
-                elif encoder.current_rotation < last_position:
-                    i -= 1
-                    direction = 0
-                    if lockstate == False:
-                        lockstate = True
-                        led_control("encoder_down")
-                        print(lockstate)
-                last_position = encoder.current_rotation
+    #while True:
+    encoder.update()
+    if encoder.check_state_change():
+        print("state_change")
+        if encoder.at_rest:
+            print("at_rest")
+            speed = time.time() - ts
+            ts = time.time()
+            direction = 10
+            if encoder.current_rotation > last_position:
+                i += 1
+                direction = 1
+                print("louder")
+            elif encoder.current_rotation < last_position:
+                i -= 1
+                direction = 0
+                print("lower")
+            last_position = encoder.current_rotation
+
+def detect_btn(chn):
+    print("music mute/unmute")
 
 def clamp(x):
     return max(0, min(x, 255))
@@ -153,15 +146,14 @@ def destroy():
 
 if __name__ == "__main__":
     try:
-        p = mp.Process(target=encoder)
-        p2= mp.Process(target=rfid_chip)
-        #p3 = mp.Process(target=led_control, args = ('rfid_busy',))
-        LED_Lock = mp.Lock()
-        p.start()
-        p2.start()
-        #p3.start()
-        p.join()
-        p2.join()
-        #p3.join()
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(pin_a, GPIO.IN, pull_up_down=GPIO.PUD_UP)    # Set BtnPin's mode is input, and pull up to high level(3.3V)
+        GPIO.add_event_detect(pin_a, GPIO.FALLING, callback=detect, bouncetime=1) 
+        GPIO.setup(pin_b, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)    # Set BtnPin's mode is input, and pull up to high level(3.3V)
+        GPIO.add_event_detect(pin_b, GPIO.RISING, callback=detect, bouncetime=1)
+        GPIO.setup(GPIO_Button, GPIO.IN, pull_up_down=GPIO.PUD_UP)    # Set BtnPin's mode is input, and pull up to high level(3.3V)
+        GPIO.add_event_detect(GPIO_Button, GPIO.FALLING, callback=detect_btn, bouncetime=300) 
+        setup_rotary_encoder()
+        rfid_chip()
     except KeyboardInterrupt:
         destroy()
